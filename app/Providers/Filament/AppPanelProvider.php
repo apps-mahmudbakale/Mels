@@ -29,7 +29,7 @@ class AppPanelProvider extends PanelProvider
             ->path('app')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Blue,
                 'info' => Color::Blue,
                 'success' => Color::Green,
                 'warning' => Color::Orange,

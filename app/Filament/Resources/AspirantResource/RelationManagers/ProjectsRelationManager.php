@@ -188,7 +188,7 @@ class ProjectsRelationManager extends RelationManager
                         'completed' => 'Completed',
                         'abandoned' => 'Abandoned',
                     ]),
-                
+
                 SelectFilter::make('category')
                     ->options([
                         'infrastructure' => 'Infrastructure',
@@ -201,7 +201,7 @@ class ProjectsRelationManager extends RelationManager
                         'women_empowerment' => 'Women Empowerment',
                         'others' => 'Others',
                     ]),
-                
+
                 SelectFilter::make('priority')
                     ->options([
                         'low' => 'Low',
@@ -223,7 +223,7 @@ class ProjectsRelationManager extends RelationManager
                     ->icon('heroicon-o-document-chart-bar')
                     ->label('')
                     ->tooltip('Manage Updates'),
-                    
+
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])

@@ -2,9 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\ProjectCategory;
+use App\Models\User;
 use App\Enums\ProjectPriority;
-use App\Enums\ProjectStatus;
 use App\Models\Aspirant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -24,27 +23,34 @@ class ProjectFactory extends Factory
     {
         $startDate = $this->faker->dateTimeBetween('-1 year', '+1 month');
         $expectedCompletion = $this->faker->dateTimeBetween($startDate, '+1 year');
-        $status = $this->faker->randomElement(ProjectStatus::cases());
-        $completionPercentage = $status === ProjectStatus::COMPLETED ? 100 : 
-                             ($status === ProjectStatus::IN_PROGRESS ? $this->faker->numberBetween(5, 95) : 0);
+        $status = $this->faker->randomElement(['pending', 'in_progress', 'on_hold', 'completed', 'cancelled']);
+        $completionPercentage = $status === 'completed' ? 100 : 
+                             ($status === 'in_progress' ? $this->faker->numberBetween(5, 95) : 0);
 
         return [
-            'aspirant_id' => Aspirant::inRandomOrder()->first()?->id ?? Aspirant::factory(),
+            'aspirant_id' => Aspirant::inRandomOrder()->first()?->id ?? Aspirant::factory()->create()->id,
             'title' => $this->faker->sentence(4),
             'description' => $this->faker->paragraphs(3, true),
-            'category' => $this->faker->randomElement(ProjectCategory::cases()),
+            'category' => $this->faker->randomElement([
+                'infrastructure',
+                'education',
+                'health',
+                'agriculture',
+                'security',
+                'employment',
+                'youth_development',
+                'women_empowerment',
+                'others'
+            ]),
             'priority' => $this->faker->randomElement(ProjectPriority::cases()),
             'estimated_cost' => $this->faker->randomFloat(2, 10000, 10000000),
             'location' => $this->faker->address,
-            'lga' => $this->faker->city,
-            'beneficiaries' => $this->faker->numberBetween(100, 10000),
+            'beneficiaries' => (string)$this->faker->numberBetween(100, 10000),
             'promise_date' => $this->faker->dateTimeBetween('-2 years', 'now'),
             'start_date' => $startDate,
             'expected_completion_date' => $expectedCompletion,
             'actual_completion_date' => $status === 'completed' ? 
                 $this->faker->dateTimeBetween($startDate, $expectedCompletion) : null,
-            'image_path' => null,
-            'document_path' => null,
             'image_path' => null,
             'document_path' => null,
             'status' => $status,
@@ -77,18 +83,22 @@ class ProjectFactory extends Factory
             ]);
 
             // If project is in progress or completed, create additional updates
-            if ($project->status !== ProjectStatus::PENDING) {
+            if ($project->status !== 'pending' && $project->status !== 'cancelled') {
                 $updatesCount = $this->faker->numberBetween(2, 8);
                 $startDate = $project->start_date;
                 $endDate = $project->actual_completion_date ?? $project->expected_completion_date;
                 
                 for ($i = 1; $i <= $updatesCount; $i++) {
+                    $minUpdateDate = max($startDate, (clone $startDate)->modify('-1 month'));
+                    $maxUpdateDate = min($endDate, new \DateTime('now'));
+                
+                    if ($minUpdateDate > $maxUpdateDate) {
+                        $maxUpdateDate = (clone $minUpdateDate)->modify('+1 month');
+                    }
+                
                     $updateDate = $this->faker->dateTimeBetween(
-                        $startDate,
-                        $this->faker->dateTimeBetween(
-                            $startDate,
-                            $endDate
-                        )
+                        $minUpdateDate,
+                        $maxUpdateDate
                     );
                     
                     $completionPercentage = min(
@@ -100,14 +110,13 @@ class ProjectFactory extends Factory
                         'user_id' => $this->faker->numberBetween(1, 5), // Assuming 5 users
                         'title' => $this->faker->sentence,
                         'description' => $this->faker->paragraphs(2, true),
-                        // Ensure we don't set a status that's not in the database enum
-                'status' => $this->faker->randomElement([
-                    'pending',
-                    'in_progress',
-                    'on_hold',
-                    'completed',
-                    'cancelled'
-                ]),
+                        'status' => $this->faker->randomElement([
+                            'pending',
+                            'in_progress',
+                            'on_hold',
+                            'completed',
+                            'cancelled'
+                        ]),
                         'completion_percentage' => $completionPercentage,
                         'amount_spent' => $this->faker->randomFloat(2, 1000, $project->estimated_cost / $updatesCount),
                         'funding_source' => $this->faker->randomElement(['State Government', 'Federal Government', 'Private Sector', 'Donor Agency']),
@@ -117,7 +126,9 @@ class ProjectFactory extends Factory
                         'next_steps' => $i < $updatesCount ? $this->faker->paragraph : null,
                         'is_verified' => $this->faker->boolean(80), // 80% chance of being verified
                         'verified_at' => $this->faker->optional(0.8)->dateTimeBetween($updateDate, 'now'),
-                        'verified_by' => $this->faker->optional(0.8)->numberBetween(1, 5),
+                        'verified_by' => $this->faker->optional(0.8)->passthrough(
+                            User::inRandomOrder()->first()?->id ?? $project->user_id
+                        ),
                     ]);
                     
                     $startDate = $updateDate;

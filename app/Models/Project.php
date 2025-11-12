@@ -105,9 +105,9 @@ class Project extends Model
         return $this->belongsTo(Aspirant::class);
     }
 
-    public function updates(): HasMany
+    public function updates()
     {
-        return $this->hasMany(ProjectUpdate::class)->latest('update_date');
+        return $this->hasMany(ProjectUpdate::class, 'project_id');
     }
 
     public function latestUpdate()
