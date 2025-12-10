@@ -34,7 +34,7 @@ class AspirantResource extends Resource
 {
     protected static ?string $model = Aspirant::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationGroup = 'People';
     protected static ?int $navigationSort = 1;
 
@@ -97,29 +97,6 @@ class AspirantResource extends Resource
                         Forms\Components\Textarea::make('bio')
                             ->maxLength(65535)
                             ->columnSpanFull(),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Social Media')
-                    ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('website')
-                                    ->url()
-                                    ->maxLength(255),
-                                TextInput::make('facebook')
-                                    ->url()
-                                    ->prefix('facebook.com/')
-                                    ->maxLength(255),
-                                TextInput::make('twitter')
-                                    ->url()
-                                    ->prefix('twitter.com/')
-                                    ->maxLength(255),
-                                TextInput::make('instagram')
-                                    ->url()
-                                    ->prefix('instagram.com/')
-                                    ->maxLength(255),
-                            ]),
                     ])
                     ->collapsible(),
 

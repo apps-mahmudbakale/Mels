@@ -39,10 +39,11 @@ class ProjectUpdateResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('project_id')
-                    ->relationship('project', 'title')
+                    ->relationship('project', 'title', modifyQueryUsing: fn (Builder $query) => $query->with('aspirant'))
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->title} (" . ($record->aspirant?->full_name ?? 'No Aspirant') . ")")
+                    ->searchable()
+                    ->preload()
                     ->required(),
-                Forms\Components\Select::make('user_id')
-                    ->relationship('user', 'name'),
                 Forms\Components\TextInput::make('title')
                     ->required()
                     ->maxLength(255),
@@ -84,8 +85,10 @@ class ProjectUpdateResource extends Resource
                 Forms\Components\Toggle::make('is_verified')
                     ->required(),
                 Forms\Components\DateTimePicker::make('verified_at'),
-                Forms\Components\TextInput::make('verified_by')
-                    ->numeric(),
+                Forms\Components\Select::make('verified_by')
+                    ->relationship('verifier', 'name')
+                    ->searchable()
+                    ->preload(),
             ]);
     }
 
@@ -124,8 +127,8 @@ class ProjectUpdateResource extends Resource
                 Tables\Columns\TextColumn::make('verified_at')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('verified_by')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('verifier.name')
+                    ->label('Verified by')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

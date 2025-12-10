@@ -25,7 +25,44 @@ class OfficeResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Forms\Components\Section::make('Office Information')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255)
+                            ->label('Office Name')
+                            ->placeholder('e.g., Governor, Senator, House of Representatives'),
+                        
+                        Forms\Components\Select::make('level')
+                            ->options([
+                                'federal' => 'Federal',
+                                'state' => 'State',
+                                'local' => 'Local',
+                            ])
+                            ->required(),
+
+                        Forms\Components\Select::make('type')
+                            ->options([
+                                'executive' => 'Executive',
+                                'legislative' => 'Legislative',
+                            ])
+                            ->required()
+                            ->default('executive'),
+
+                        Forms\Components\Select::make('constituency_id')
+                            ->relationship('constituency', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->label('Constituency')
+                            ->placeholder('Select constituency (optional)'),
+                        
+                        Forms\Components\Textarea::make('description')
+                            ->maxLength(65535)
+                            ->columnSpanFull()
+                            ->rows(3)
+                            ->placeholder('Brief description of the office and its responsibilities'),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -35,27 +72,64 @@ class OfficeResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->weight('bold'),
+
+                Tables\Columns\TextColumn::make('level')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'federal' => 'success',
+                        'state' => 'warning',
+                        'local' => 'gray',
+                    }),
+
+                Tables\Columns\TextColumn::make('type')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'executive' => 'primary',
+                        'legislative' => 'info',
+                    }),
+                
                 Tables\Columns\TextColumn::make('constituency.name')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->badge()
+                    ->color('info')
+                    ->placeholder('N/A'),
+                
                 Tables\Columns\TextColumn::make('constituency.region.name')
+                    ->label('Region')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->badge()
+                    ->color('warning')
+                    ->placeholder('N/A'),
+                
+                Tables\Columns\TextColumn::make('aspirants_count')
+                    ->counts('aspirants')
+                    ->label('Aspirants')
+                    ->badge()
+                    ->color('success'),
+                
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('constituency')
+                    ->relationship('constituency', 'name')
+                    ->searchable()
+                    ->preload(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

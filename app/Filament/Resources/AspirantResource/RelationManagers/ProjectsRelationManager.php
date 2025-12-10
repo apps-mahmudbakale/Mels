@@ -218,12 +218,6 @@ class ProjectsRelationManager extends RelationManager
                     }),
             ])
             ->actions([
-                Tables\Actions\Action::make('updates')
-                    ->url(fn (Project $record): string => route('filament.admin.resources.projects.edit', $record))
-                    ->icon('heroicon-o-document-chart-bar')
-                    ->label('')
-                    ->tooltip('Manage Updates'),
-
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -233,12 +227,5 @@ class ProjectsRelationManager extends RelationManager
                 ]),
             ])
             ->defaultSort('promise_date', 'desc');
-    }
-
-    protected function getTableQuery(): Builder
-    {
-        return parent::getTableQuery()
-            ->with('updates')
-            ->withoutGlobalScopes();
     }
 }

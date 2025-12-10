@@ -110,6 +110,11 @@ class Project extends Model
         return $this->hasMany(ProjectUpdate::class, 'project_id');
     }
 
+    public function project_updates(): HasMany
+    {
+        return $this->hasMany(ProjectUpdate::class, 'project_id');
+    }
+
     public function latestUpdate()
     {
         return $this->hasOne(ProjectUpdate::class)->latest('update_date');

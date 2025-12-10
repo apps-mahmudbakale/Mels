@@ -12,9 +12,11 @@ class Office extends Model
         'name',
         'slug',
         'level',
+        'type',
         'description',
         'sort_order',
-        'is_active'
+        'is_active',
+        'constituency_id',
     ];
 
     protected $casts = [
@@ -36,6 +38,11 @@ class Office extends Model
     public function aspirants(): HasMany
     {
         return $this->hasMany(Aspirant::class);
+    }
+
+    public function constituency()
+    {
+        return $this->belongsTo(Constituency::class);
     }
 
     public function getFullNameAttribute(): string

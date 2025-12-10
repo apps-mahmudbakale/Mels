@@ -13,6 +13,7 @@ class Aspirant extends Model
     protected $fillable = [
         'first_name',
         'last_name',
+        'slug',
         'email',
         'phone',
         'party_id',
@@ -35,6 +36,23 @@ class Aspirant extends Model
     ];
 
     protected $appends = ['full_name'];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($aspirant) {
+            if (empty($aspirant->slug)) {
+                $aspirant->slug = Str::slug($aspirant->first_name . ' ' . $aspirant->last_name);
+            }
+        });
+
+        static::updating(function ($aspirant) {
+            if ($aspirant->isDirty(['first_name', 'last_name']) && empty($aspirant->slug)) {
+                 $aspirant->slug = Str::slug($aspirant->first_name . ' ' . $aspirant->last_name);
+            }
+        });
+    }
 
     public function getFullNameAttribute(): string
     {
@@ -64,7 +82,12 @@ class Aspirant extends Model
 
     public function projects(): HasMany
     {
-        return $this->hasMany(Project::class, 'aspirant_id');
+        return $this->hasMany(Project::class);
+    }
+
+    public function declarations(): HasMany
+    {
+        return $this->hasMany(Declaration::class);
     }
 
     // Accessors

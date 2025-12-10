@@ -17,6 +17,8 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
+    protected static ?string $recordTitleAttribute = 'name';
+
     protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationGroup = 'User Management';
     protected static ?int $navigationSort = 2;
@@ -31,18 +33,37 @@ class UserResource extends Resource
         return 2;
     }
 
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'email'];
+    }
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name'),
-                Forms\Components\TextInput::make('email')->email()->unique(ignoreRecord: true)->required(),
-                Forms\Components\TextInput::make('password')->password()->required(),
-                Forms\Components\Select::make('roles')
-                    ->relationship('roles', 'name')
-                    ->multiple()
-                    ->preload()
-                    ->searchable(),
+                Forms\Components\Section::make('User Details')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('email')
+                            ->email()
+                            ->required()
+                            ->maxLength(255)
+                            ->unique(ignoreRecord: true),
+                        Forms\Components\TextInput::make('password')
+                            ->password()
+                            ->dehydrated(fn ($state) => filled($state))
+                            ->required(fn (string $context): bool => $context === 'create')
+                            ->maxLength(255),
+                        Forms\Components\CheckboxList::make('roles')
+                            ->relationship('roles', 'name')
+                            ->searchable()
+                            ->columns(2)
+                            ->gridDirection('row'),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -50,16 +71,30 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('email'),
-                Tables\Columns\TextColumn::make('created_at')->date(),
-                Tables\Columns\TextColumn::make('updated_at')->date(),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('email')
+                    ->searchable()
+                    ->sortable()
+                    ->icon('heroicon-m-envelope')
+                    ->copyable(),
+                Tables\Columns\TextColumn::make('roles.name')
+                    ->badge()
+                    ->color('info')
+                    ->separator(',')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
