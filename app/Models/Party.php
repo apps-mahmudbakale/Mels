@@ -12,9 +12,6 @@ class Party extends Model
 
     protected $fillable = [
         'name',
-        'abbreviation',
-        'logo',
-        'description',
     ];
 
     public function aspirants(): HasMany

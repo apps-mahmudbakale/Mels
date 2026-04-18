@@ -13,9 +13,6 @@ class PartyFactory extends Factory
     {
         return [
             'name' => $this->faker->unique()->company(),
-            'abbreviation' => strtoupper($this->faker->unique()->lexify('???')),
-            'logo' => null,
-            'description' => $this->faker->sentence(),
         ];
     }
 }
