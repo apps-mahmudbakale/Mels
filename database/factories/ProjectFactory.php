@@ -136,7 +136,10 @@ class ProjectFactory extends Factory
                             : null,
                         'next_steps' => $i < $updatesCount ? $this->faker->paragraph : null,
                         'is_verified' => $this->faker->boolean(80),
-                        'verified_at' => $this->faker->optional(0.8)->dateTimeBetween($updateDate, 'now'),
+                        'verified_at' => $this->faker->optional(0.8)->dateTimeBetween(
+                            $updateDate,
+                            max($updateDate, new \DateTime('now'))
+                        ),
                         'verified_by' => $this->faker->optional(0.8)->passthrough(
                             User::inRandomOrder()->first()?->id ?? 1
                         ),
