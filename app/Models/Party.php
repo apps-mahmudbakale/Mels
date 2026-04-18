@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Party extends Model
 {
     use HasFactory;
-{
+
     protected $fillable = [
         'name',
         'abbreviation',

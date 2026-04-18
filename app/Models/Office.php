@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 class Office extends Model
 {
     use HasFactory;
-{
+
     protected $fillable = [
         'name',
         'slug',

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Constituency extends Model
 {
     use HasFactory;
-{
+
     protected $fillable = ['name', 'type', 'state_id'];
     
     protected $casts = [
