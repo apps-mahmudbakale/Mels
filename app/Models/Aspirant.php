@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 class Aspirant extends Model
 {
     use HasFactory;
-{
+
     protected $fillable = [
         'first_name',
         'last_name',
